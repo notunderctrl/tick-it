@@ -1,14 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const baseRouter = require('./routes/base-router');
 require('dotenv/config');
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.json({
-    success: 'Received request successfully!',
-  });
-});
+app.use('/', baseRouter);
 
 const PORT = 3001;
 
@@ -17,6 +14,8 @@ if (!process.env.MONGODB_URI) {
 }
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
+  console.log('Connected to database.');
+
   app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
   });

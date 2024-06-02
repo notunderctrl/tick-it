@@ -6,7 +6,7 @@ module.exports = async (req, res, next) => {
     const cookies = req.cookies;
     const token = cookies?.token;
 
-    if (!token) next();
+    if (!token) return next();
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 

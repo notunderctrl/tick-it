@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../../models/User');
+const jwt = require('jsonwebtoken');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 
 router.get('/signin', (req, res) => {
   res.redirect(
-    'https://discord.com/oauth2/authorize?client_id=1244372835997061170&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fauth%2Fcallback&scope=guilds+identify'
+    `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fauth%2Fcallback&scope=guilds+identify`
   );
 });
 
@@ -62,24 +63,46 @@ router.get('/callback', async (req, res) => {
 
   const userResJson = await userRes.json();
 
-  const userExists = await User.exists({ id: userResJson.id });
+  let user = await User.findOne({ id: userResJson.id });
 
-  if (userExists) {
-    // TODO: update database document and redirect to dashboard
-    res.send('your profile already exists!');
-    return;
+  if (!user) {
+    user = new User({
+      id: userResJson.id,
+      username: userResJson.username,
+      avatarHash: userResJson.avatar,
+      accessToken: oauthResJson.access_token,
+      refreshToken: oauthResJson.refresh_token,
+    });
+  } else {
+    user.username = userResJson.username;
+    user.avatarHash = userResJson.avatar;
+    user.accessToken = oauthResJson.access_token;
+    user.refreshToken = oauthResJson.refresh_token;
   }
 
-  const newUser = new User({
-    id: userResJson.id,
-    username: userResJson.username,
-    avatarHash: userResJson.avatar,
-    accessToken: oauthResJson.access_token,
-    refreshToken: oauthResJson.refresh_token,
-  });
+  await user.save();
 
-  await newUser.save();
-  res.send('success');
+  const token = jwt.sign(
+    {
+      id: userResJson.id,
+      username: userResJson.username,
+      avatarHash: userResJson.avatar,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res
+    .status(200)
+    .cookie('token', token, {
+      domain: 'localhost',
+      httpOnly: true,
+      // expires: new Date(Date.now() + 6.048e8),
+      secure: process.env.NODE_ENV === 'development',
+      maxAge: 6.048e8,
+      // sameSite: ''
+    })
+    .json({ success: true });
 });
 
 module.exports = router;

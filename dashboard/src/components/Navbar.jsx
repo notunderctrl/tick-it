@@ -1,6 +1,35 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CircleUser, LogOut, Loader2 } from 'lucide-react';
 
 export default function Navbar() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+
+      try {
+        const res = await fetch('http://localhost:3001/dashboard/@me', {
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error('Not authenticated');
+        }
+
+        const user = await res.json();
+
+        setUser(user);
+      } catch (error) {
+        console.log(error);
+      }
+
+      setLoading(false);
+    })();
+  }, []);
+
   return (
     <>
       <nav className='z-20 mb-5'>
@@ -40,7 +69,6 @@ export default function Navbar() {
 
               <div className='flex-none hidden sm:block'>
                 <ul className='menu menu-horizontal'>
-                  {/* Navbar menu content here */}
                   <li>
                     <a>Navbar Item 1</a>
                   </li>
@@ -49,8 +77,43 @@ export default function Navbar() {
                   </li>
                 </ul>
               </div>
+
+              {loading ? (
+                <div>
+                  <Loader2 className='animate-spin size-6 mr-4' />
+                </div>
+              ) : (
+                <div className='dropdown dropdown-end mr-4 ml-2'>
+                  <button
+                    tabIndex={0}
+                    role='button'
+                    className='flex items-center justify-center'
+                  >
+                    {user && user.avatarHash ? (
+                      <img
+                        src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatarHash}.webp?size=128`}
+                        className='size-6 object-cover rounded-full border'
+                      />
+                    ) : (
+                      <CircleUser className='size-6' />
+                    )}
+                  </button>
+
+                  <ul
+                    tabIndex={0}
+                    className='dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52'
+                  >
+                    <li>
+                      <a className='flex items-center gap-x-2 hover:text-red-500'>
+                        <LogOut className='size-4' /> <span>Sign out</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
+
           <div className='drawer-side'>
             <label
               htmlFor='my-drawer-3'

@@ -1,10 +1,9 @@
 const express = require('express');
-const authRoutesHandler = require('./auth');
-const ticketRoutesHandler = require('./tickets');
 
 const router = express.Router();
 
-router.use('/auth', authRoutesHandler);
-router.use('/tickets', ticketRoutesHandler);
+router.use('/auth', require('./auth'));
+router.use('/tickets', require('./tickets'));
+router.use('/dashboard', require('./dashboard'));
 
 module.exports = router;

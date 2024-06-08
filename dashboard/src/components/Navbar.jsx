@@ -1,6 +1,6 @@
+import { CircleUser, Loader2, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CircleUser, LogOut, Loader2 } from 'lucide-react';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -29,6 +29,22 @@ export default function Navbar() {
       setLoading(false);
     })();
   }, []);
+
+  async function handleLogout() {
+    try {
+      const res = await fetch('http://localhost:3001/auth/signout', {
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to logout');
+      }
+
+      window.location.href = '/';
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <>
@@ -104,7 +120,10 @@ export default function Navbar() {
                     className='dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52'
                   >
                     <li>
-                      <a className='flex items-center gap-x-2 hover:text-red-500'>
+                      <a
+                        onClick={handleLogout}
+                        className='flex items-center gap-x-2 hover:text-red-500'
+                      >
                         <LogOut className='size-4' /> <span>Sign out</span>
                       </a>
                     </li>

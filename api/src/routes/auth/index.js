@@ -107,4 +107,8 @@ router.get('/callback', async (req, res) => {
     .redirect(DASHBOARD_URL);
 });
 
+router.get('/signout', (req, res) => {
+  res.clearCookie('token').sendStatus(200);
+});
+
 module.exports = router;

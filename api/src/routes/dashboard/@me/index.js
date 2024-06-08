@@ -21,10 +21,14 @@ router.get('/guilds', async (req, res) => {
     return res.status(401).json({ message: 'Not logged in' });
   }
 
-  const redisCacheRes = await redis.get(`user-guilds:${req.user.id}`);
+  const skipCache = req.query.skipcache;
 
-  if (redisCacheRes) {
-    return res.status(200).json(JSON.parse(redisCacheRes));
+  if (!skipCache) {
+    const redisCacheRes = await redis.get(`user-guilds:${req.user.id}`);
+
+    if (redisCacheRes) {
+      return res.status(200).json(JSON.parse(redisCacheRes));
+    }
   }
 
   const guildsRes = await fetch(`${DISCORD_ENDPOINT}/users/@me/guilds`, {

@@ -7,6 +7,8 @@ const router = express.Router();
 // GET: api.tick-it.com/auth/signin
 // GET: api.tick-it.com/auth/callback
 
+const DASHBOARD_URL = 'http://localhost:5173';
+
 router.get('/signin', (req, res) => {
   res.redirect(
     `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fauth%2Fcallback&scope=guilds+identify`
@@ -102,7 +104,7 @@ router.get('/callback', async (req, res) => {
       maxAge: 6.048e8,
       // sameSite: ''
     })
-    .json({ success: true });
+    .redirect(DASHBOARD_URL);
 });
 
 module.exports = router;
